@@ -1,4 +1,4 @@
-import type { bearblogApiPostRequest, BearblogPostList, BearblogPostStatuses, BearblogPost } from "./post.d.ts";
+import type { BearblogApiPostRequest, BearblogPostList, BearblogPostStatuses, BearblogPost } from "./post.d.ts";
 import fm from "front-matter";
 
 export async function queryApi(endpoint: string) {
@@ -25,14 +25,14 @@ export async function queryApi(endpoint: string) {
     return data;
 }
 
-export async function postToApi(endpoint: string, content: object) {
+export async function postToApi(endpoint: string, content: object, method: string = "POST") {
     const subdomain = process.env.BEARBLOG_SUBDOMAIN;
     const token = process.env.BEARBLOG_KEY;
 
     const response = await fetch(
         `https://bearblog.dev/${subdomain}/api/v1/${endpoint}`,
         {
-            method: "POST",
+            method: method,
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -51,13 +51,29 @@ export async function postToApi(endpoint: string, content: object) {
     return data;
 }
 
-export async function createDraft(post: bearblogApiPostRequest) {
+export async function createDraft(post: BearblogApiPostRequest) {
     const tags = post.tags ?? []
     const data = await postToApi("post/", {
         title: post.title,
         content: post.content,
         tags: tags,
     })
+
+    try {
+        const post = data as BearblogPost;
+        return post;
+    } catch {
+        return null;
+    }
+}
+
+export async function updatePost(uuid: string, post: BearblogApiPostRequest) {
+    // removes all non-truthy data. A bit jank, i suppose? But it should 100% prevent us from un-setting fields that aren't specified in the frontmatter for the updated post.
+    const payload = Object.fromEntries(
+        Object.entries(post).filter(([_, value]) => Boolean(value))
+    );
+
+    const data = await postToApi(`post/${uuid}/`, payload, "PATCH");
 
     try {
         const post = data as BearblogPost;
@@ -79,11 +95,11 @@ export async function getPost(uuid: string): Promise<BearblogPost | null> {
     }
 }
 
-export function parseBearblogPost(text: string, fallbackTitle: string): bearblogApiPostRequest {
+export function parseBearblogPost(text: string, fallbackTitle: string): BearblogApiPostRequest {
     const parsed = fm<Record<string, unknown>>(text);
     const attributes = parsed.attributes;
 
-    const post: bearblogApiPostRequest = {
+    const post: BearblogApiPostRequest = {
         title: typeof attributes.title === "string"
             ? attributes.title
             : fallbackTitle,

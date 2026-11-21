@@ -20,7 +20,7 @@ export type BearblogPost = {
 }
 
 export type BearblogApiPostResponse = Required<BearblogPost>
-export type bearblogApiPostRequest = Pick<BearblogPost, "title" | "content">
+export type BearblogApiPostRequest = Pick<BearblogPost, "title" | "content">
     & Partial<Omit<BearblogPost, "title" | "content">>;
 
 
