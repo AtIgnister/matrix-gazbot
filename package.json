@@ -1,0 +1,15 @@
+{
+  "name": "matrix-kbot-framework",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "matrix-js-sdk": "^45.1.0"
+  }
+}
