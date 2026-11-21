@@ -80,7 +80,7 @@ export default class gazetteCmd extends Command {
             const post = await createDraft(draft);
 
             if (post) {
-                sendTextMessage(`Draft created! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug}/?token=${post.token}`, roomId, ctx.client)
+                sendTextMessage(`Draft created! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug}/?token=${post.token} \nUID: ${post.uid}`, roomId, ctx.client)
             }
         }
     }
