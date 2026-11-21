@@ -1,9 +1,14 @@
 
 import { Command } from "../framework/bot/command";
 import type { commandContext } from "../framework/bot/commandContext";
-import { getPostList } from "../libs/bearblog/bearblog.ts";
-import { BearblogPostStatuses } from "../libs/bearblog/post.ts";
-import { sendTextMessage } from "../framework/matrix/messages.ts";
+
+import { createDraft, getPost, getPostList, } from "../libs/bearblog/bearblog.ts";
+import { BearblogPostStatuses, type BearblogPost } from "../libs/bearblog/post.ts";
+import type { bearblogApiPostRequest } from "../libs/bearblog/post.ts";
+
+import { sendTextMessage, sendTextMessageWithTextAttachment } from "../framework/matrix/messages.ts";
+import { getAttachmentName, getTextAttachmentContent } from "../framework/matrix/attachments.ts";
+import { env } from "../config/env.ts";
 
 export default class gazetteCmd extends Command {
     private async listCmd(ctx: commandContext, args: string[]) {
@@ -37,13 +42,61 @@ export default class gazetteCmd extends Command {
         await sendTextMessage(msg || "No posts found.", roomId, ctx.client);
     }
 
+    private async exportCmd(ctx: commandContext, args: string[]) {
+        const roomId = ctx.message.getRoomId();
+        if (!roomId) return;
+        if (!args[0]) return;
+
+        const post = await getPost(args[0]);
+        console.log(args);
+        if (post === null) {
+            sendTextMessage("Post not found.", roomId, ctx.client);
+            return;
+        }
+
+        sendTextMessageWithTextAttachment("Post Exported:", post.content, roomId, ctx.client, post.slug + ".md")
+    }
+
+    private async createPostCmd(ctx: commandContext, args: string[]) {
+        const roomId = ctx.message.getRoomId();
+
+        if (!args[0]) return;
+        if (!roomId) return;
+        if (args[0] !== "draft") return;
+
+        for (const attachment of ctx.attachments) {
+            const text = await getTextAttachmentContent(ctx.client, attachment);
+            const name = await getAttachmentName(attachment);
+            if (!text) {
+                sendTextMessage("No attachment content found.", roomId, ctx.client)
+                return;
+            }
+            if (!name) { return; }
+            const draft: bearblogApiPostRequest = {
+                title: name,
+                content: text
+            };
+
+            const post = await createDraft(draft);
+
+            if (post) {
+                sendTextMessage(`Draft created! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug}/?token=${post.token}`, roomId, ctx.client)
+            }
+        }
+    }
+
     constructor() {
         super({
-            name: "gaz",
+            name: ["gaz", "gazette"],
             execute: async (ctx: commandContext, args: string[]) => {
-                console.log(args);
                 if (args[0] === "list") {
                     await this.listCmd(ctx, args.slice(1));
+                }
+                if (args[0] === "export") {
+                    await this.exportCmd(ctx, args.slice(1))
+                }
+                if (args[0] === "create") {
+                    await this.createPostCmd(ctx, args.slice(1));
                 }
             }
         });

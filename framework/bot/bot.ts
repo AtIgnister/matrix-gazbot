@@ -37,7 +37,14 @@ export default class Bot {
     }
 
     addCommand(command: Command) {
-        this.commands.set(command.name, command)
+        if (command.name instanceof Array) {
+            command.name.forEach((name: string) => {
+                console.log("registed command " + name)
+                this.commands.set(name, command);
+            })
+        } else {
+            this.commands.set(command.name, command)
+        }
     }
 
     loadCommands(commands: Command[]) {

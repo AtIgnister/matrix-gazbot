@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 import type { commandContext } from "./commandContext";
 
 export abstract class Command {
-    public readonly name: string;
+    public readonly name: string | string[];
     public readonly execute: (
         ctx: commandContext,
         args: string[]
@@ -12,11 +12,12 @@ export abstract class Command {
     public readonly subcommands: Map<string, Command>;
 
     constructor(options: {
-        name: string;
+        name: string | string[];
         execute: (ctx: commandContext, ...args: any[]) => Promise<void> | void;
         subcommands?: Map<string, Command>;
     }) {
         this.name = options.name;
+
         this.execute = options.execute;
         this.subcommands = options.subcommands ?? new Map();
     }

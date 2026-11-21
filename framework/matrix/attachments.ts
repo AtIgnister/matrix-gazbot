@@ -115,3 +115,11 @@ export async function getTextAttachmentContent(
 
     return await response.text();
 }
+
+export function getAttachmentName(event: MatrixEvent): string | null {
+    if (!isAttachment(event)) return null;
+
+    const content = event.getContent();
+
+    return content.filename ?? content.body ?? null;
+}
