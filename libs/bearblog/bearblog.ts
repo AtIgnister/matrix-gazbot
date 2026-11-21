@@ -1,4 +1,5 @@
 import type { bearblogApiPostRequest, BearblogPostList, BearblogPostStatuses, BearblogPost } from "./post.d.ts";
+import fm from "front-matter";
 
 export async function queryApi(endpoint: string) {
     const subdomain = process.env.BEARBLOG_SUBDOMAIN;
@@ -76,4 +77,40 @@ export async function getPost(uuid: string): Promise<BearblogPost | null> {
     } catch {
         return null;
     }
+}
+
+export function parseBearblogPost(text: string, fallbackTitle: string): bearblogApiPostRequest {
+    const parsed = fm<Record<string, unknown>>(text);
+    const attributes = parsed.attributes;
+
+    const post: bearblogApiPostRequest = {
+        title: typeof attributes.title === "string"
+            ? attributes.title
+            : fallbackTitle,
+
+        content: parsed.body,
+
+        ...(Array.isArray(attributes.tags) &&
+            attributes.tags.every(tag => typeof tag === "string")
+            ? { tags: attributes.tags }
+            : {}),
+
+        ...(typeof attributes.publish === "boolean"
+            ? { publish: attributes.publish }
+            : {}),
+
+        ...(typeof attributes.meta_description === "string"
+            ? { meta_description: attributes.meta_description }
+            : {}),
+
+        ...(typeof attributes.meta_image === "string"
+            ? { meta_image: attributes.meta_image }
+            : {}),
+
+        ...(typeof attributes.slug === "string"
+            ? { slug: attributes.slug }
+            : {})
+    };
+
+    return post;
 }

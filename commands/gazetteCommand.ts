@@ -2,13 +2,15 @@
 import { Command } from "../framework/bot/command";
 import type { commandContext } from "../framework/bot/commandContext";
 
-import { createDraft, getPost, getPostList, } from "../libs/bearblog/bearblog.ts";
+import { createDraft, getPost, getPostList, parseBearblogPost, } from "../libs/bearblog/bearblog.ts";
 import { BearblogPostStatuses, type BearblogPost } from "../libs/bearblog/post.ts";
 import type { bearblogApiPostRequest } from "../libs/bearblog/post.ts";
 
 import { sendTextMessage, sendTextMessageWithTextAttachment } from "../framework/matrix/messages.ts";
 import { getAttachmentName, getTextAttachmentContent } from "../framework/matrix/attachments.ts";
 import { env } from "../config/env.ts";
+
+import fm from "front-matter";
 
 export default class gazetteCmd extends Command {
     private async listCmd(ctx: commandContext, args: string[]) {
@@ -66,16 +68,14 @@ export default class gazetteCmd extends Command {
 
         for (const attachment of ctx.attachments) {
             const text = await getTextAttachmentContent(ctx.client, attachment);
-            const name = await getAttachmentName(attachment);
+            const attachmentName = await getAttachmentName(attachment);
             if (!text) {
                 sendTextMessage("No attachment content found.", roomId, ctx.client)
                 return;
             }
-            if (!name) { return; }
-            const draft: bearblogApiPostRequest = {
-                title: name,
-                content: text
-            };
+
+            if (!attachmentName) { return; }
+            const draft = parseBearblogPost(text, attachmentName)
 
             const post = await createDraft(draft);
 
