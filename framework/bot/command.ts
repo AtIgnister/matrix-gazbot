@@ -9,25 +9,12 @@ export abstract class Command {
         ctx: commandContext,
         args: string[]
     ) => Promise<void> | void;
-    public readonly subcommands: Map<string, Command>;
-
     constructor(options: {
         name: string | string[];
         execute: (ctx: commandContext, ...args: any[]) => Promise<void> | void;
-        subcommands?: Map<string, Command>;
     }) {
         this.name = options.name;
-
         this.execute = options.execute;
-        this.subcommands = options.subcommands ?? new Map();
-    }
-
-    addSubcommand(key: string, command: Command): void {
-        this.subcommands.set(key, command);
-    }
-
-    getSubcommand(key: string): Command | undefined {
-        return this.subcommands.get(key);
     }
 
     static async loadFromDirectory(directory: string): Promise<Command[]> {
