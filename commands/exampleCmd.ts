@@ -6,6 +6,7 @@ export default class exampleCmd extends Command {
     constructor() {
         super({
             name: "Example",
+            requiresAdmin: false,
             execute: async (ctx: commandContext, ...args: any[]) => {
                 console.log("Hello world!");
                 console.log(ctx.body)

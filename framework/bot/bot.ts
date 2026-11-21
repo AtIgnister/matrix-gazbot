@@ -4,9 +4,13 @@ import { Command } from "./command";
 import CommandInput from "./commandInput";
 import type { commandContext } from "./commandContext";
 import { isAttachment, atxstoreTemporaryAttachment, consumeTemporaryAttachments } from "../matrix/attachments.ts";
+import type { AdminConfig } from "../../config/adminConfig.ts";
+import { sendTextMessage } from "../matrix/messages.ts";
 
 export default class Bot {
     client: MatrixClient;
+    admins: AdminConfig;
+
     readonly startTime: number;
 
     private commands: Map<string, Command> = new Map()
@@ -18,13 +22,14 @@ export default class Bot {
         }
     >();
 
-    constructor(env: config_template_basic) {
+    constructor(env: config_template_basic, admins: AdminConfig) {
         this.client = createClient({
             baseUrl: env.HOMESERVER,
             accessToken: env.ACCESS_TOKEN,
             userId: env.USERNAME
         })
         this.startTime = Date.now();
+        this.admins = admins;
     }
 
     start() {
@@ -55,10 +60,22 @@ export default class Bot {
 
     executeCommand(commandName: string, context: commandContext, args?: string[]) {
         const command = this.commands.get(commandName);
-        if (command instanceof Command) {
-            command.execute(context, (args ?? []))
-        } else {
+        if (command == undefined) {
             console.log(`Command "${commandName}" not found."`)
+            return;
+        }
+
+        if (!command.requiresAdmin || this.admins.users.includes(context.userId)) {
+            command.execute(context, args ?? []);
+        } else {
+            const roomId = context.message.getRoomId();
+            if (!roomId) return;
+
+            sendTextMessage(
+                "You do not have the required permissions to execute this command.",
+                roomId,
+                context.client
+            );
         }
     }
 
@@ -114,6 +131,7 @@ export default class Bot {
                         ...directAttachments
                     ],
                     message: event,
+                    admins: this.admins,
                     client: this.client
                 }
                 this.executeCommand(input.commandName, ctx, input.arguments)

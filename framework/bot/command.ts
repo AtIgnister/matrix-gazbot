@@ -9,12 +9,16 @@ export abstract class Command {
         ctx: commandContext,
         args: string[]
     ) => Promise<void> | void;
+    public readonly requiresAdmin: boolean;
+
     constructor(options: {
         name: string | string[];
+        requiresAdmin: boolean;
         execute: (ctx: commandContext, ...args: any[]) => Promise<void> | void;
     }) {
         this.name = options.name;
         this.execute = options.execute;
+        this.requiresAdmin = options.requiresAdmin;
     }
 
     static async loadFromDirectory(directory: string): Promise<Command[]> {

@@ -121,12 +121,13 @@ export default class gazetteCmd extends Command {
             return;
         }
 
-        sendTextMessage(`Post published! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug} \nUID: ${post.uid}`, roomId, ctx.client)
+        await sendTextMessage(`Post published! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug} \nUID: ${post.uid}`, roomId, ctx.client);
     }
 
     constructor() {
         super({
             name: ["gaz", "gazette"],
+            requiresAdmin: true,
             execute: async (ctx: commandContext, args: string[]) => {
                 if (args[0] === "list") {
                     await this.listCmd(ctx, args.slice(1));
