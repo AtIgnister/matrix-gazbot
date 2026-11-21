@@ -2,7 +2,7 @@
 import { Command } from "../framework/bot/command";
 import type { commandContext } from "../framework/bot/commandContext";
 
-import { createDraft, getPost, getPostList, parseBearblogPost, updatePost } from "../libs/bearblog/bearblog.ts";
+import { createDraft, getPost, getPostList, parseBearblogPost, updatePost, publishPost } from "../libs/bearblog/bearblog.ts";
 import { BearblogPostStatuses } from "../libs/bearblog/post.ts";
 
 import { sendTextMessage, sendTextMessageWithTextAttachment } from "../framework/matrix/messages.ts";
@@ -111,6 +111,19 @@ export default class gazetteCmd extends Command {
         }
     }
 
+    private async publishPostCmd(ctx: commandContext, args: string[]) {
+        const roomId = ctx.message.getRoomId();
+        if (!args[0]) return;
+        if (!roomId) return;
+
+        const post = await publishPost(args[0])
+        if (!post) {
+            return;
+        }
+
+        sendTextMessage(`Post published! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug} \nUID: ${post.uid}`, roomId, ctx.client)
+    }
+
     constructor() {
         super({
             name: ["gaz", "gazette"],
@@ -126,6 +139,9 @@ export default class gazetteCmd extends Command {
                 }
                 if (args[0] === "update") {
                     await this.updatePostCmd(ctx, args.slice(1));
+                }
+                if (args[0] === "publish") {
+                    await this.publishPostCmd(ctx, args.slice(1));
                 }
             }
         });

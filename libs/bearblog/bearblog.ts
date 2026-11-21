@@ -83,6 +83,21 @@ export async function updatePost(uuid: string, post: BearblogApiPostRequest) {
     }
 }
 
+export async function publishPost(uuid: string): Promise<BearblogPost | null> {
+    try {
+        const data = await postToApi(
+            `post/${uuid}/`,
+            { publish: true },
+            "PATCH"
+        );
+
+        return data as BearblogPost;
+    } catch (error) {
+        console.error("Failed to publish post:", error);
+        return null;
+    }
+}
+
 export async function getPostList(status: BearblogPostStatuses): Promise<BearblogPostList> {
     return await queryApi(`post/?status=${status}`) as BearblogPostList;
 }
