@@ -84,29 +84,46 @@ export default class gazetteCmd extends Command {
 
     private async updatePostCmd(ctx: commandContext, args: string[]) {
         const roomId = ctx.message.getRoomId();
-        if (!args[0]) return;
-        if (!roomId) return;
+        if (!args[0] || !roomId) return;
+
+        // Fetch the existing post to get its current title.
+        const existingPost = await getPost(args[0]);
+
+        if (!existingPost) {
+            await sendTextMessage("Post not found.", roomId, ctx.client);
+            return;
+        }
 
         for (const attachment of ctx.attachments) {
             const text = await getTextAttachmentContent(ctx.client, attachment);
             const attachmentName = await getAttachmentName(attachment);
+
             if (!text) {
-                sendTextMessage("No attachment content found.", roomId, ctx.client)
+                await sendTextMessage("No attachment content found.", roomId, ctx.client);
                 return;
             }
 
-            if (!attachmentName) { return; }
-            const updatedPost = parseBearblogPost(text, attachmentName)
+            if (!attachmentName) return;
+
+            // Use the existing post title as fallback.
+            const updatedPost = parseBearblogPost(text, existingPost.title || attachmentName);
 
             const post = await updatePost(args[0], updatedPost);
-            if (!post) {
-                return;
-            }
 
-            if (post.publish == false) {
-                sendTextMessage(`Draft updated! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug}/?token=${post.token} \nUID: ${post.uid}`, roomId, ctx.client);
+            if (!post) return;
+
+            if (post.publish === false) {
+                await sendTextMessage(
+                    `Draft updated! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug}/?token=${post.token}\nUID: ${post.uid}`,
+                    roomId,
+                    ctx.client
+                );
             } else {
-                sendTextMessage(`Post updated! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug} \nUID: ${post.uid}`, roomId, ctx.client)
+                await sendTextMessage(
+                    `Post updated! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug}\nUID: ${post.uid}`,
+                    roomId,
+                    ctx.client
+                );
             }
         }
     }
