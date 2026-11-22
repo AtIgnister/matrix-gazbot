@@ -141,6 +141,49 @@ export default class gazetteCmd extends Command {
         await sendTextMessage(`Post published! View it at https://${env.BEARBLOG_SUBDOMAIN}.bearblog.dev/${post.slug} \nUID: ${post.uid}`, roomId, ctx.client);
     }
 
+    private async helpCmd(ctx: commandContext, args: string[]) {
+        const roomId = ctx.message.getRoomId();
+        if (!roomId) return;
+
+        await sendTextMessage(`
+            # Help - !gazette
+            You can call the gazette command in two different ways - !gaz or !gazette.
+            These are the available options:
+
+            ## list
+            Usage: gazette list [post_type]
+            Lists all posts. For the first argument, specify either draft or published, to get the respective post types.
+            All listed posts will also show their respective UID. You'll need this for most other commands.
+            Examples: !gazette list drafts, !gazette list published
+
+            ## export
+            Usage: !gazette export [UID]
+            Exports a gazette post to a markdown file. This takes a UID as its first argument.
+            Use this when you want to edit a post, to first get the version that's currently saved on the gazette.
+            Examples: !gazette export MreDPdoAtdobnyIoZcud 
+
+            ## create
+            Usage: !gazette create draft | (text attachment required)
+            Publishes the attached text file to the grizzly gazette as a draft post, and returns a viewable URL, and a UID.
+            Only works if you attach a markdown file to your message.
+            Add a [frontmatter header](https://www.markdownlang.com/advanced/frontmatter.html) to the file you attach to change the post attributes. All the attributes are called the same thing they're called on bearblog.
+            Examples: !gazette create draft
+
+            ## update
+            Usage: !gazette update [UID] | (text attachment required)
+            Updates the post with the specified UID by replacing its contents with the content of the attachment.
+            Supports frontmatter for updating post attributes. Will only change the attributes included in the frontmatter header, meaning that you can't accidentally unset attributes.
+            Examples: !gazette update MreDPdoAtdobnyIoZcud
+
+            ## publish
+            Usage: !gazette publish [UID]
+            Publishes the post with the specified UID.
+            This can technically also be done by just changing the frontmatter attribute "publish" to true, this command is just for the sake of convenience.
+            Examples: !gazette publish MreDPdoAtdobnyIoZcud
+            
+        `, roomId, ctx.client);
+    }
+
     constructor() {
         super({
             name: ["gaz", "gazette"],
@@ -148,19 +191,26 @@ export default class gazetteCmd extends Command {
             execute: async (ctx: commandContext, args: string[]) => {
                 if (args[0] === "list") {
                     await this.listCmd(ctx, args.slice(1));
+                    return;
                 }
                 if (args[0] === "export") {
                     await this.exportCmd(ctx, args.slice(1))
+                    return;
                 }
                 if (args[0] === "create") {
                     await this.createPostCmd(ctx, args.slice(1));
+                    return;
                 }
                 if (args[0] === "update") {
                     await this.updatePostCmd(ctx, args.slice(1));
+                    return;
                 }
                 if (args[0] === "publish") {
                     await this.publishPostCmd(ctx, args.slice(1));
+                    return;
                 }
+
+                this.helpCmd(ctx, args.slice(1));
             }
         });
     }
