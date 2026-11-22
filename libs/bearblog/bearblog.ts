@@ -121,26 +121,43 @@ export function parseBearblogPost(text: string, fallbackTitle: string): Bearblog
 
         content: parsed.body,
 
+        // tags
         ...(Array.isArray(attributes.tags) &&
             attributes.tags.every(tag => typeof tag === "string")
             ? { tags: attributes.tags }
             : {}),
 
+        // date
+        ...(typeof attributes.date === "string"
+            ? { date: attributes.date }
+            : {}),
+
+        // publish
         ...(typeof attributes.publish === "boolean"
             ? { publish: attributes.publish }
             : {}),
 
+        // meta_description
         ...(typeof attributes.meta_description === "string"
             ? { meta_description: attributes.meta_description }
             : {}),
 
+        // meta_image
         ...(typeof attributes.meta_image === "string"
             ? { meta_image: attributes.meta_image }
             : {}),
 
+        // slug
         ...(typeof attributes.slug === "string"
             ? { slug: attributes.slug }
-            : {})
+            : {}),
+
+        // slug alias
+        ...(typeof attributes.link === "string"
+            ? { link: attributes.slug }
+            : {}),
+
+            
     };
 
     return post;
