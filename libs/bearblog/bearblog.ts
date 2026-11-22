@@ -150,14 +150,11 @@ export function parseBearblogPost(text: string, fallbackTitle: string): Bearblog
         // slug
         ...(typeof attributes.slug === "string"
             ? { slug: attributes.slug }
-            : {}),
+            : typeof attributes.link === "string"
+                ? { slug: attributes.link }
+                : {}),
 
-        // slug alias
-        ...(typeof attributes.link === "string"
-            ? { link: attributes.slug }
-            : {}),
 
-            
     };
 
     return post;
