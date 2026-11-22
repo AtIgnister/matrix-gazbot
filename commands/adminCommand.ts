@@ -29,8 +29,6 @@ export default class adminCmd extends Command {
 async function addRoomMembersToAdmins(roomId: string, ctx: commandContext, admins: AdminConfig): Promise<AdminConfig> {
     const response = await ctx.client.getJoinedRoomMembers(roomId);
 
-    const addedUsers: string[] = [];
-
     for (const userId of Object.keys(response.joined)) {
         if (!admins.users.includes(userId)) {
             admins.users.push(userId);
