@@ -1,4 +1,4 @@
-# matrix-kbot-framework
+# matrix-gazbot
 
 To install dependencies:
 
