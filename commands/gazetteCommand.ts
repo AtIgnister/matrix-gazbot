@@ -145,13 +145,12 @@ export default class gazetteCmd extends Command {
         const roomId = ctx.message.getRoomId();
         if (!roomId) return;
 
-        await sendTextMessage(`
-# Help - !gazette
+        await sendTextMessage(`# Help - !gazette
 You can call the gazette command in two different ways - !gaz or !gazette.
 These are the available options:
 
 ## list
-Usage: gazette list [post_type]
+Usage: !gazette list [post_type]
 Lists all posts. For the first argument, specify either draft or published, to get the respective post types.
 All listed posts will also show their respective UID. You'll need this for most other commands.
 Examples: !gazette list drafts, !gazette list published
@@ -180,7 +179,6 @@ Usage: !gazette publish [UID]
 Publishes the post with the specified UID.
 This can technically also be done by just changing the frontmatter attribute "publish" to true, this command is just for the sake of convenience.
 Examples: !gazette publish MreDPdoAtdobnyIoZcud
-            
         `, roomId, ctx.client);
     }
 
