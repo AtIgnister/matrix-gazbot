@@ -1,7 +1,6 @@
 import { saveAdmins, type AdminConfig } from "../config/adminConfig";
 import { Command } from "../framework/bot/command";
 import type { commandContext } from "../framework/bot/commandContext";
-import { getTextAttachmentContent } from "../framework/matrix/attachments";
 import { sendTextMessage } from "../framework/matrix/messages";
 
 export default class adminCmd extends Command {
