@@ -87,7 +87,7 @@ export async function publishPost(uuid: string): Promise<BearblogPost | null> {
     try {
         const data = await postToApi(
             `post/${uuid}/`,
-            { publish: true },
+            { publish: true, discoverable: true },
             "PATCH"
         );
 
